@@ -5,44 +5,66 @@ import {
   Text,
   View,
   Button,
+  TouchableOpacity,
+  ListView,
+  Image,
 } from 'react-native';
-import Navigator from 'native-navigation';
+import Navigator, { SharedElementGroup, SharedElement } from 'native-navigation';
 import Screen from '../components/Screen';
-import { SCREENONE } from '../routes';
+import { SCREENONE, SCREENTWO } from '../routes';
+// import ImageRow from '../components/ImageRow';
+
+const imageDog = require('../assets/flip.jpg')
+
+const dataLists = [1, 2, 3, 4, 5, 6];
+
+const onPress = id => () => {
+  Navigator.push(SCREENTWO, { id }, {
+    transitionGroup: id,
+  });
+  console.log('row id is ' + id);
+}
 
 export default class ScreenOne extends Component {
+  constructor() {
+    super();
+    const ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
+    this.state = {
+      dataSource: ds.cloneWithRows(dataLists),
+    };
+  }
+
+  renderRow(rowID) {
+    return(
+      <SharedElementGroup id={rowID} style={{ borderColor: 'black', borderWidth: 1}}>
+        <TouchableOpacity 
+            style={{ flex: 1 }}
+            onPress={onPress(rowID)}
+        >
+          <SharedElement
+            type="poster"
+            typeId={rowID}
+          >
+            <Image source={{ uri: 'https://www.codeproject.com/KB/GDI-plus/ImageProcessing2/flip.jpg' }} 
+                        style={{ height: 200, width: 200 }} />
+          </SharedElement>
+
+          <Text> Doggo {rowID} </Text>
+
+        </TouchableOpacity>
+    </SharedElementGroup>
+    )
+
+  }
+
   render() {
     return (
       <Screen>
-        <View style={styles.container}>
-          <Text style={styles.welcome}>
-            Welcome to React Native!
-          </Text>
-          <Text style={styles.instructions}>
-            Add more screen components in the screens directory
-            and register them in index.js
-          </Text>
-          <Text style={styles.instructions}>
-            Double tap R on your keyboard to reload,{'\n'}
-            Shake or press menu button for dev menu
-          </Text>
-          <Button
-            title="Push"
-            onPress={() => Navigator.push(SCREENONE)}
-          />
-          <Button
-            title="Present"
-            onPress={() => Navigator.present(SCREENONE)}
-          />
-          <Button
-            title="Pop"
-            onPress={() => Navigator.pop()}
-          />
-          <Button
-            title="Dismiss"
-            onPress={() => Navigator.dismiss()}
-          />
-        </View>
+        <ListView
+            style={{ flex: 1 }}
+            dataSource={this.state.dataSource}
+            renderRow={(rowData, sectionID, rowID) => this.renderRow(rowID)}
+        />
       </Screen>
     );
   }
